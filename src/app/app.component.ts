@@ -1,48 +1,49 @@
-import { AfterViewInit, Component } from '@angular/core';
-import { from, fromEvent } from 'rxjs';
+import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+import { Observer4 } from './service/observer4';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements AfterViewInit{
+export class AppComponent implements OnInit{
   title = 'rxjs-practice';
   // create an array
-  postArray = [
-    { title: 'Leela1', description: 'Leela1 Description'},
-    { title: 'Leela1', description: 'Leela1 Description'},
-    { title: 'Leela1', description: 'Leela1 Description'}
-  ]
-  // now convert array into observable
-  postArrayObservable$ = from(this.postArray);
+  constructor() { }
 
-  promise = new Promise((resolve, reject) => {
-    setTimeout(() => {
-      resolve('Resolve the promise. sending data');
-    },3000)
-  })
-  // convert promise into observable
-  promiseObservable$ = from(this.promise);
+  ngOnInit(): void {
+    const newObservale = new Observable<number>(observer => {
+      for(let i = 0; i < 5; i++){
+        observer.next(i); 
+      }
+      observer.complete();
+    })
 
-  constructor(){
-    this.postArrayObservable$.subscribe({
-      next: (data) => console.log(data),
-      error: (err) => console.log(err),
-      complete: () => console.log('Complete done!'),
-    });
+    let observer = {
+      next: (data: number) => console.log('observer 1: ',data),
+      error: (error: string) => console.log(error),
+      complete: () => console.log('Complete all done'),
+    }
+    // one way
+    newObservale.subscribe(observer);
 
-    this.promiseObservable$.subscribe({
-      next: (data) => console.log(data),
-      error: (err) => console.log(err),
-      complete: () => console.log('promise done!'),
-    });
+    // second way
+    newObservale.subscribe({
+      next: (data: number) => console.log('observer 2: ',data),
+      error: (error: string) => console.log(error),
+      complete: () => console.log('Complete all done'),
+    })
+
+    // third way (using comma method callback) but this method is depricated
+    newObservale.subscribe(
+      (data)=> console.log('observer 3: ',data),
+      (error) => console.log(error),
+      () => console.log('complet done!')
+    )
+
+    // fourth way using class base approach
+    newObservale.subscribe(new Observer4())
   }
-  ngAfterViewInit(): void {
-    fromEvent(document.getElementById('click-button')!, 'click').subscribe({
-      next: (data) => console.log(data),
-      error: (err) => console.log(err),
-      complete: () => console.log('promise done!'),
-    });
-  }  
+
 }
